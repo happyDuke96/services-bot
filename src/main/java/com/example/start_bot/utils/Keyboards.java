@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 
 import java.util.ArrayList;
 import java.util.List;
+
 public class Keyboards {
     public static InlineKeyboardMarkup weatherMarkUp(List<Weather> weatherList) {
         List<String> emojies = new ArrayList<>();
@@ -30,10 +31,10 @@ public class Keyboards {
         for (int i = 0; i < weatherList.size(); i++) {
             InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
             StringBuilder emojiText = new StringBuilder(EmojiParser.parseToUnicode(emojies.get(i)));
-            inlineKeyboardButton.setText(weatherList.get(i).getCity()+ " " +emojiText);
-            inlineKeyboardButton.setCallbackData(String.format("%s/%s","weather",i));
+            inlineKeyboardButton.setText(weatherList.get(i).getCity() + " " + emojiText);
+            inlineKeyboardButton.setCallbackData(String.format("%s/%s", "weather", i));
             row.add(inlineKeyboardButton);
-            if (i % 2 == 1){
+            if (i % 2 == 1) {
                 rows.add(row);
                 row = new ArrayList<>();
             }

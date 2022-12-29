@@ -32,34 +32,36 @@ import java.util.regex.Pattern;
 @Service
 public class BotAPI {
     private boolean someField;
-    private  List<Currency> currencyList;;
+    private List<Currency> currencyList;
+    ;
     private List<Weather> weatherList;
     private List<BotCommand> myCommands;
 
 
-    public CurrentMessage handle(Update update){
+    public CurrentMessage handle(Update update) {
 
         CurrentMessage currentMessage = new CurrentMessage();
-        if (update.hasMessage()){
+        if (update.hasMessage()) {
             currentMessage = handleMessage(update.getMessage());
         }
-        if (update.hasCallbackQuery()){
+        if (update.hasCallbackQuery()) {
             currentMessage = handleCallBack(update.getCallbackQuery());
         }
         return currentMessage;
 
     }
+
     private CurrentMessage handleCallBack(CallbackQuery callbackQuery) {
 
         String request = callbackQuery.getData();
         String command = request.split("/")[0];
         Integer id = Integer.valueOf(request.split("/")[1]);
-        if (command.equals("weather")){
+        if (command.equals("weather")) {
             Weather weather = weatherList.get(id);
             EditMessageText editMessageText = new EditMessageText();
             editMessageText.setChatId(String.valueOf(callbackQuery.getMessage().getChatId()));
             editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
-            editMessageText.setText(String.format("The temperature in %s %s degrees",weather.getCity(),
+            editMessageText.setText(String.format("The temperature in %s %s degrees", weather.getCity(),
                     weather.getData().getTemp()));
             CurrentMessage currentMessage = new CurrentMessage();
             currentMessage.setEditMessageText(editMessageText);
@@ -73,34 +75,33 @@ public class BotAPI {
     private CurrentMessage handleMessage(Message message) {
         String inputText = "";
         CurrentMessage currentMessage = new CurrentMessage();
-        if (message.hasText()){
+        if (message.hasText()) {
             inputText = message.getText();
         }
-        if (someField){
+        if (someField) {
             currentMessage = handleCalculate(message);
         }
-        if (inputText.equals("/help")){
+        if (inputText.equals("/help")) {
             currentMessage = handleCommands(message);
         }
-        if (inputText.equals("/trains")){
+        if (inputText.equals("/trains")) {
             currentMessage = handleTrains(message);
         }
-        if (inputText.equals("/start")){
-             currentMessage = handleStart(message);
+        if (inputText.equals("/start")) {
+            currentMessage = handleStart(message);
         }
-        if (inputText.equals("/course")){
-             currentMessage = getCurrentCurrency(message);
+        if (inputText.equals("/course")) {
+            currentMessage = getCurrentCurrency(message);
         }
-        if (inputText.equals("/manual")){
+        if (inputText.equals("/manual")) {
             someField = true;
-            return MessageUtil.getMessage(message.getChatId(),"Enter number");
+            return MessageUtil.getMessage(message.getChatId(), "Enter number");
         }
         if (inputText.equals("/weather")) {
             try {
 //                currentMessage = deleted(message);
                 currentMessage = handleWeather(message);
-            }
-            catch (JsonProcessingException e){
+            } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
         }
@@ -109,14 +110,14 @@ public class BotAPI {
     }
 
     private CurrentMessage handleCommands(Message message) {
-            CurrentMessage currentMessage = new CurrentMessage();
-            SendMessage sendMessage = new SendMessage();
+        CurrentMessage currentMessage = new CurrentMessage();
+        SendMessage sendMessage = new SendMessage();
         {
-            myCommands.add(new BotCommand("/start","starter bot"));
-            myCommands.add(new BotCommand("/course","currnecy info"));
-            myCommands.add(new BotCommand("/manual","manual currency"));
-            myCommands.add(new BotCommand("/weaher","weather info"));
-            myCommands.add(new BotCommand("/trains","trains info"));
+            myCommands.add(new BotCommand("/start", "starter bot"));
+            myCommands.add(new BotCommand("/course", "currnecy info"));
+            myCommands.add(new BotCommand("/manual", "manual currency"));
+            myCommands.add(new BotCommand("/weaher", "weather info"));
+            myCommands.add(new BotCommand("/trains", "trains info"));
 
         }
         return null;
@@ -124,11 +125,11 @@ public class BotAPI {
     }
 
 
-    public CurrentMessage getCurrentCurrency(Message message){
+    public CurrentMessage getCurrentCurrency(Message message) {
         currencyList = new ArrayList<>();
         String URL = "https://api.uznews.uz/api/v1/main/currencies";
         RestTemplate template = new RestTemplate();
-        ResponseEntity<String > response = template.getForEntity(URL,String.class);
+        ResponseEntity<String> response = template.getForEntity(URL, String.class);
         ObjectMapper mapper = new ObjectMapper();
         try {
             JsonNode result = mapper.readTree(response.getBody()).get("result");
@@ -138,24 +139,18 @@ public class BotAPI {
                 Currency currency = new Currency();
                 currency.setName(jsonNode.get("Ccy").toString());
                 String rate = jsonNode.get("Rate").toString();
-                rate = rate.substring(1,rate.length()-1);
+                rate = rate.substring(1, rate.length() - 1);
                 String diff = jsonNode.get("Diff").toString();
-                diff = diff.substring(1,diff.length()-1);
-//                String c_UZ = jsonNode.get("CcyNm_UZ").toString();
-//                c_UZ = c_UZ.substring(1,c_UZ.length()-1);
-//                String c_RU = jsonNode.get("CcyNm_RU").toString();
-//                c_RU = c_RU.substring(1,c_RU.length()-1);
-//                String c_UZc = jsonNode.get("CcyNm_UZC").toString();
-//                c_UZc = c_UZc.substring(1,c_UZc.length()-1);
+                diff = diff.substring(1, diff.length() - 1);
                 currency.setRate(new BigDecimal(rate));
                 currency.setDiff(new BigDecimal(diff));
                 currency.setNameUZ(jsonNode.get("CcyNm_UZ").toString());
                 currency.setNameUZC(jsonNode.get("CcyNm_RU").toString());
                 currency.setNameRU(jsonNode.get("CcyNm_UZC").toString());
 
-                currency.setNameRU(currency.getNameRU().replaceAll("\"",""));
-                currency.setNameUZ(currency.getNameUZ().replaceAll("\"",""));
-                currency.setNameUZC(currency.getNameUZC().replaceAll("\"",""));
+                currency.setNameRU(currency.getNameRU().replaceAll("\"", ""));
+                currency.setNameUZ(currency.getNameUZ().replaceAll("\"", ""));
+                currency.setNameUZC(currency.getNameUZC().replaceAll("\"", ""));
                 currencyList.add(currency);
             }
         } catch (JsonProcessingException e) {
@@ -165,31 +160,32 @@ public class BotAPI {
         responseText.append("Current exchange rate:\n");
 
         for (Currency currency : currencyList) {
-                responseText.append(currency.getNameUZ()).append(" (").append(currency.getName())
-                        .append(")\n");
-                responseText.append("1").append(currency.getName()).append(currency.getRate())
-                        .append(" ").append("UZS\n").append("Difference ").append(currency.getDiff()).append(" UZS").append("\n");
-                responseText.append("\n\n");
+            responseText.append(currency.getNameUZ()).append(" (").append(currency.getName())
+                    .append(")\n");
+            responseText.append("1").append(currency.getName()).append(currency.getRate())
+                    .append(" ").append("UZS\n").append("Difference ").append(currency.getDiff()).append(" UZS").append("\n");
+            responseText.append("\n\n");
         }
-        return MessageUtil.getMessage(message.getChatId(),responseText.toString());
+        return MessageUtil.getMessage(message.getChatId(), responseText.toString());
     }
+
     private CurrentMessage handleStart(Message message) {
-        return MessageUtil.getMessage(message.getChatId(),"Welcome,choose service");
+        return MessageUtil.getMessage(message.getChatId(), "Welcome,choose service");
     }
 
     private CurrentMessage handleCalculate(Message message) {
         StringBuilder input = new StringBuilder();
         BigDecimal result = null;
-            Pattern regex = Pattern.compile("^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$");
-            Matcher matcher = regex.matcher(message.getText());
-            if (matcher.find()) {
-                for (Currency currency : currencyList) {
-                    result = new BigDecimal(message.getText()).divide(currency.getRate(), 2, RoundingMode.CEILING);
-                    input.append(message.getText()).append("\tUZS\t").append(result).append(currency.getName()).append("\n");
-                }
-                return MessageUtil.getMessage(message.getChatId(), String.valueOf(input));
+        Pattern regex = Pattern.compile("^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$");
+        Matcher matcher = regex.matcher(message.getText());
+        if (matcher.find()) {
+            for (Currency currency : currencyList) {
+                result = new BigDecimal(message.getText()).divide(currency.getRate(), 2, RoundingMode.CEILING);
+                input.append(message.getText()).append("\tUZS\t").append(result).append(currency.getName()).append("\n");
             }
-            return MessageUtil.getMessage(message.getChatId(), "Invalid number please try again!");
+            return MessageUtil.getMessage(message.getChatId(), String.valueOf(input));
+        }
+        return MessageUtil.getMessage(message.getChatId(), "Invalid number please try again!");
     }
 
 
@@ -197,7 +193,7 @@ public class BotAPI {
         weatherList = new ArrayList<>();
         String URL = "https://api.uznews.uz/api/v1/main/weather";
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.getForEntity(URL,String.class);
+        ResponseEntity<String> response = restTemplate.getForEntity(URL, String.class);
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -225,7 +221,7 @@ public class BotAPI {
     }
 
 
-    public CurrentMessage deleted(Message message){
+    public CurrentMessage deleted(Message message) {
         CurrentMessage currentMessage = new CurrentMessage();
         DeleteMessage deleteMessage = new DeleteMessage();
         if (message != null) {

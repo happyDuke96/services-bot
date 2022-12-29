@@ -8,13 +8,12 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.IOException;
-
 
 @Component
 public class BotChild extends TelegramLongPollingBot {
     @Autowired
     BotAPI botAPI;
+
     @Override
     public String getBotUsername() {
         return "@app_start_bot";
@@ -29,7 +28,7 @@ public class BotChild extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         CurrentMessage message = botAPI.handle(update);
-        if (message != null && message.getType() != null){
+        if (message != null && message.getType() != null) {
             executeMessage(message);
         }
     }
@@ -38,20 +37,19 @@ public class BotChild extends TelegramLongPollingBot {
     private void executeMessage(CurrentMessage message) {
         MessageType type = message.getType();
         try {
-            if (message.getType().equals(MessageType.SEND_MESSAGE)){
+            if (message.getType().equals(MessageType.SEND_MESSAGE)) {
                 execute(message.getSendMessage());
             }
-            if (message.getType().equals(MessageType.SEND_PHOTO)){
+            if (message.getType().equals(MessageType.SEND_PHOTO)) {
                 execute(message.getSendPhoto());
             }
-            if (message.getType().equals(MessageType.DELETE_MESSAGE)){
+            if (message.getType().equals(MessageType.DELETE_MESSAGE)) {
                 execute(message.getDeleteMessage());
             }
-            if (message.getType().equals(MessageType.EDIT_MESSAGE)){
+            if (message.getType().equals(MessageType.EDIT_MESSAGE)) {
                 execute(message.getEditMessageText());
             }
-        }
-        catch (TelegramApiException e){
+        } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
